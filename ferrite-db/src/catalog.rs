@@ -3,13 +3,15 @@ use std::collections::HashMap;
 // Represents a single column in a table.
 // `name` is the column name, and `data_type` is a simple string ("INT" or "TEXT").
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct Column {
     pub name: String,
     pub data_type: String, // Keeping this simple only "INT" or "TEXT" for now
 }
 
 // Schema for a table: its name and the list of columns it contains.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct TableSchema {
     pub name: String,
     pub columns: Vec<Column>,
@@ -20,6 +22,7 @@ pub struct Catalog {
     pub tables: HashMap<String, TableSchema>,
 }
 
+#[allow(dead_code)]
 impl Catalog {
     // Creates an empty catalog.
     pub fn new() -> Self {
