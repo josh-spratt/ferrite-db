@@ -1,4 +1,4 @@
-name: Tag & Release
+name: Auto Tag & Release
 
 on:
   push:
@@ -12,55 +12,52 @@ jobs:
   tag-and-release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Important so we can see existing tags
 
       - name: Get version from Cargo.toml
         id: get_version
         run: |
-          VERSION=$(grep '^version =' ferrite-db/Cargo.toml | cut -d '"' -f2)
+          VERSION=$(grep '^version' ferrite-db/Cargo.toml | head -n 1 | cut -d '"' -f2)
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "Version detected: $VERSION"
-
-      - name: Check if tag exists
-        id: check_tag
-        run: |
-          if git ls-remote --tags origin | grep -q "refs/tags/v${VERSION}$"; then
-            echo "Tag v${VERSION} already exists. Skipping release."
+          if git rev-parse "v$VERSION" >/dev/null 2>&1; then
+            echo "Tag v$VERSION already exists."
             echo "SKIP_RELEASE=true" >> $GITHUB_ENV
           else
-            echo "Tag v${VERSION} does not exist."
             echo "SKIP_RELEASE=false" >> $GITHUB_ENV
           fi
 
-      - name: Stop if release should be skipped
-        if: env.SKIP_RELEASE == 'true'
-        run: exit 0
-
       - name: Create tag
+        if: env.SKIP_RELEASE == 'false'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag v${VERSION}
           git push origin v${VERSION}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Rust
+        if: env.SKIP_RELEASE == 'false'
         uses: dtolnay/rust-toolchain@stable
 
       - name: Build
-        run: cargo build --release --manifest-path ferrite-db/Cargo.toml
+        if: env.SKIP_RELEASE == 'false'
+        run: |
+          cd ferrite-db
+          cargo build --release
 
       - name: Package Binary
+        if: env.SKIP_RELEASE == 'false'
         run: |
           mkdir dist
           cp ferrite-db/target/release/ferrite-db dist/
-          tar -czvf ferrite-db-v${VERSION}.tar.gz -C dist ferrite-db
+          tar -czvf ferrite-db-${VERSION}.tar.gz -C dist ferrite-db
 
       - name: Create GitHub Release
+        if: env.SKIP_RELEASE == 'false'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ env.VERSION }}
-          files: ferrite-db-v${{ env.VERSION }}.tar.gz
+          files: ferrite-db-${{ env.VERSION }}.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
