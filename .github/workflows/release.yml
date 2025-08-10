@@ -22,7 +22,7 @@ jobs:
       - name: Package Binary
         run: |
           mkdir dist
-          cp target/release/ferrite-db dist/
+          cp ferrite-db/target/release/ferrite-db dist/
           tar -czvf ferrite-db-${{ github.ref_name }}.tar.gz -C dist ferrite-db
 
       - name: Create Release
