@@ -31,7 +31,9 @@ impl<B: StorageBackend + Send + Sync + 'static> Executor<B> {
                 self.backend.create_table(&schema).unwrap();
                 println!("Table created: {}", name);
             }
-            Statement::Insert { table_name, source, .. } => {
+            Statement::Insert {
+                table_name, source, ..
+            } => {
                 let source = source.as_ref().expect("INSERT must have source");
                 let values_rows = match &*source.body {
                     SetExpr::Values(values) => &values.rows,
@@ -42,7 +44,9 @@ impl<B: StorageBackend + Send + Sync + 'static> Executor<B> {
                     let row = Row {
                         values: row_exprs.iter().map(|e| format!("{}", e)).collect(),
                     };
-                    self.backend.insert_row(&table_name.to_string(), row).unwrap();
+                    self.backend
+                        .insert_row(&table_name.to_string(), row)
+                        .unwrap();
                 }
                 println!("Inserted into {}", table_name);
             }

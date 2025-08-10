@@ -1,8 +1,8 @@
-use super::{StorageBackend, Row};
+use super::{Row, StorageBackend};
 use crate::catalog::TableSchema;
+use bincode;
 use std::fs::OpenOptions;
 use std::io::{Cursor, Write};
-use bincode;
 
 pub struct FileStorageBackend;
 
