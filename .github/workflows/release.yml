@@ -16,6 +16,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Build
+        working-directory: ferrite-db
         run: cargo build --release
 
       - name: Package Binary
