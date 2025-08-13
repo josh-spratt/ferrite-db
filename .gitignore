@@ -22,3 +22,6 @@ target
 
 # Database table files
 *.tbl
+
+# Catalog metadata (using wildcard in case eventually we decide to switch from JSON to bincode)
+catalog.*

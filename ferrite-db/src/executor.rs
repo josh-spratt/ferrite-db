@@ -27,7 +27,12 @@ impl<B: StorageBackend + Send + Sync + 'static> Executor<B> {
                         .collect(),
                 };
 
-                self.catalog.lock().unwrap().create_table(schema.clone());
+                {
+                    let mut catalog = self.catalog.lock().unwrap();
+                    catalog.create_table(schema.clone());
+                    catalog.save_to_file("catalog.json").unwrap();
+                }
+
                 self.backend.create_table(&schema).unwrap();
                 println!("Table created: {}", name);
             }
