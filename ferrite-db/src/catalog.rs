@@ -47,7 +47,7 @@ impl Catalog {
 
     // Saves the catalog to disk.
     pub fn save_to_file(&self, path: &str) -> Result<(), String> {
-        let encoded = serde_json::to_string_pretty(self)
+        let encoded = serde_json::to_string_pretty(&self.tables)
             .map_err(|e| e.to_string())?;
         std::fs::write(path, encoded).map_err(|e| e.to_string())
     }
