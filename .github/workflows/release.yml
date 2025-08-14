@@ -30,7 +30,7 @@ jobs:
           fi
 
       - name: Create tag
-        if: env.SKIP_RELEASE == 'false'
+        if: ${{ env.SKIP_RELEASE == 'false' }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -38,24 +38,24 @@ jobs:
           git push origin v${VERSION}
 
       - name: Install Rust
-        if: env.SKIP_RELEASE == 'false'
+        if: ${{ env.SKIP_RELEASE == 'false' }}
         uses: dtolnay/rust-toolchain@stable
 
       - name: Build
-        if: env.SKIP_RELEASE == 'false'
+        if: ${{ env.SKIP_RELEASE == 'false' }}
         run: |
           cd ferrite-db
           cargo build --release
 
       - name: Package Binary
-        if: env.SKIP_RELEASE == 'false'
+        if: ${{ env.SKIP_RELEASE == 'false' }}
         run: |
           mkdir dist
           cp ferrite-db/target/release/ferrite-db dist/
           tar -czvf ferrite-db-${VERSION}.tar.gz -C dist ferrite-db
 
       - name: Create GitHub Release
-        if: env.SKIP_RELEASE == 'false'
+        if: ${{ env.SKIP_RELEASE == 'false' }}
         uses: softprops/action-gh-release@v2
         with:
           files: ferrite-db-${{ env.VERSION }}.tar.gz
