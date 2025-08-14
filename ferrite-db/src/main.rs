@@ -23,7 +23,13 @@ fn main() {
     // In this single‑threaded example the `Arc`/`Mutex` isn't strictly
     // necessary, but it's a common pattern for code that may become
     // multi‑threaded later.
-    let catalog = Arc::new(Mutex::new(Catalog::new()));
+    let catalog = Arc::new(Mutex::new(
+    Catalog::load_from_file("catalog.json").unwrap_or_else(|err| {
+        eprintln!("Warning: could not load catalog: {}", err);
+        Catalog::new()
+        })
+    ));
+
 
     // `FileStorageBackend` is the part of the system that talks to
     // disk.  It too is wrapped in `Arc` for shared ownership.
