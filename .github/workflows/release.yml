@@ -15,49 +15,44 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Important so we can see existing tags
+          fetch-depth: 0
 
       - name: Get version from Cargo.toml
         id: get_version
         run: |
           VERSION=$(grep '^version' ferrite-db/Cargo.toml | head -n 1 | cut -d '"' -f2)
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-          if git rev-parse "v$VERSION" >/dev/null 2>&1; then
-            echo "Tag v$VERSION already exists."
-            echo "SKIP_RELEASE=true" >> $GITHUB_ENV
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create tag if missing
+        run: |
+          if git rev-parse "v${{ env.VERSION }}" >/dev/null 2>&1; then
+            echo "Tag v${{ env.VERSION }} already exists."
           else
-            echo "SKIP_RELEASE=false" >> $GITHUB_ENV
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git tag v${{ env.VERSION }}
+            git push origin v${{ env.VERSION }}
           fi
 
-      - name: Create tag
-        if: ${{ env.SKIP_RELEASE == 'false' }}
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag v${VERSION}
-          git push origin v${VERSION}
-
       - name: Install Rust
-        if: ${{ env.SKIP_RELEASE == 'false' }}
         uses: dtolnay/rust-toolchain@stable
 
       - name: Build
-        if: ${{ env.SKIP_RELEASE == 'false' }}
         run: |
           cd ferrite-db
           cargo build --release
 
       - name: Package Binary
-        if: ${{ env.SKIP_RELEASE == 'false' }}
         run: |
-          mkdir dist
+          mkdir -p dist
           cp ferrite-db/target/release/ferrite-db dist/
-          tar -czvf ferrite-db-${VERSION}.tar.gz -C dist ferrite-db
+          tar -czvf ferrite-db-${{ env.VERSION }}.tar.gz -C dist ferrite-db
 
-      - name: Create GitHub Release
-        if: ${{ env.SKIP_RELEASE == 'false' }}
+      - name: Create or Update GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: v${{ env.VERSION }}
           files: ferrite-db-${{ env.VERSION }}.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
