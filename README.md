@@ -42,7 +42,7 @@ Select from a table
 > select * from popular_databases;
 ["1", "Oracle", "1"]
 ["2", "MySQL", "2"]
-["4", "PostgreSQL", "4"]
+["3", "PostgreSQL", "3"]
 ```
 
 View the catalog.json file
